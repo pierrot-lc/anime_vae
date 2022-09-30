@@ -345,9 +345,12 @@ class VAE(nn.Module):
             sample: Sampled images from the latent space.
                 Shape of [batch_size, n_channels, image_size, image_size].
         """
+        device = next(self.parameters()).device
         latent_shape = (batch_size, self.n_channels_latent, image_size >> self.n_layers, image_size >> self.n_layers)
-        mu = torch.zeros(latent_shape)
-        log_var = torch.zeros(latent_shape)
+
+        mu = torch.zeros(latent_shape).to(device)
+        log_var = torch.zeros(latent_shape).to(device)
+
         z = self.reparameterize(mu, log_var)
         sample = self.decoder(z)
         sample = torch.sigmoid(sample)

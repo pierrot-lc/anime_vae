@@ -29,6 +29,8 @@ class AnimeDataset(Dataset):
 
 
 def load_datasets(path_dir: str, image_size: int, seed: int) -> tuple[AnimeDataset, AnimeDataset]:
+    """Instanciate a training and testing dataset by randomly splitting the images.
+    """
     paths = [
         os.path.join(path_dir, p)
         for p in os.listdir(path_dir)
