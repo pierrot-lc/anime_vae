@@ -1,6 +1,8 @@
 train:
+  n_epochs: 10
   batch_size: 64
   lr: 1.0e-4
+  KLD_weight: 0.5
   seed: 42
 
 data:
