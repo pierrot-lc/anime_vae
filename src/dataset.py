@@ -1,6 +1,7 @@
 import os
 
 from PIL import Image
+from sklearn.model_selection import train_test_split
 
 import torch
 from torch.utils.data.dataset import Dataset
@@ -27,11 +28,12 @@ class AnimeDataset(Dataset):
         return image
 
 
-def load_dataset(path_dir: str, image_size: int) -> AnimeDataset:
+def load_datasets(path_dir: str, image_size: int, seed: int) -> tuple[AnimeDataset, AnimeDataset]:
     paths = [
         os.path.join(path_dir, p)
         for p in os.listdir(path_dir)
     ]
+    paths_train, paths_test = train_test_split(paths, test_size=0.2, random_state=seed)
 
     transform = transforms.Compose([
         transforms.Resize((image_size, image_size)),
@@ -39,5 +41,12 @@ def load_dataset(path_dir: str, image_size: int) -> AnimeDataset:
         transforms.ToTensor(),  # Pixels are between [0, 1]
         transforms.Lambda(lambda p: 2*p - 1),  # Normalize between [-1, 1]
     ])
+    train = AnimeDataset(paths_train, transform)
 
-    return AnimeDataset(paths, transform)
+    transform = transforms.Compose([
+        transforms.Resize((image_size, image_size)),
+        transforms.ToTensor(),  # Pixels are between [0, 1]
+        transforms.Lambda(lambda p: 2*p - 1),  # Normalize between [-1, 1]
+    ])
+    test = AnimeDataset(paths_test, transform)
+    return train, test
