@@ -15,6 +15,7 @@ class App(tk.Tk):
         self,
         model: VAE,
         pca: PCAComponents,
+        device: str = 'cpu',
         size: int = 800,
         nscales: int = 10,
     ):
@@ -22,6 +23,9 @@ class App(tk.Tk):
 
         self.model = model
         self.pca = pca
+        self.device = device
+
+        self.model.to(self.device)
 
         self.width = size
         self.height = size // 2
@@ -93,10 +97,10 @@ class App(tk.Tk):
         for i, v in enumerate(self.scales_var):
             self.z[i] = v.get()
 
-        z = self.pca.compute_latent(self.z)
+        z = self.pca.compute_latent(self.z).to(self.device)
         image = self.model.generate_from_z(z)[0]
 
-        image = image.permute(1, 2, 0).numpy()  # To numpy
+        image = image.permute(1, 2, 0).cpu().numpy()  # To numpy
         image = np.uint8(image * 255)
         image = Image.fromarray(image)  # To PIL
         image = image.resize((self.height, self.height))
@@ -117,7 +121,7 @@ class App(tk.Tk):
         self.produce_image()
 
 
-def main(model_path: str, config_path: str):
+def main(model_path: str, config_path: str, device: str):
     with open(config_path, 'r') as config_file:
         config = yaml.safe_load(config_file)
 
@@ -136,10 +140,12 @@ def main(model_path: str, config_path: str):
     pca = PCAComponents()
     pca.compute_components(model, batch)
 
-    app = App(model, pca)
+    app = App(model, pca, device)
     app.mainloop()
+
 
 if __name__ == '__main__':
     model_path = 'models/vae.pth'
     config_path = 'models/vae.yaml'
-    main(model_path, config_path)
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    main(model_path, config_path, device)
