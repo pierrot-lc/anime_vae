@@ -1,6 +1,8 @@
 """
 Inspired from https://debuggercafe.com/getting-started-with-variational-autoencoder-using-pytorch/.
 """
+from typing import Optional
+
 import torch
 import torch.nn as nn
 from einops.layers.torch import Rearrange
@@ -74,6 +76,7 @@ class ReduceBlock(nn.Module):
                 Shape of [batch_size, n_filters_in, width, height].
 
         Returns
+        -------
             y: Output tensor.
                 Shape of [batch_size, n_filters_out, width/2, height/2] if `upscale`.
                 Shape of [batch_size, n_filters_out, width*2, height*2] if not `upscale`.
@@ -277,7 +280,8 @@ class VAE(nn.Module):
     def reparameterize(
         self,
         mu: torch.Tensor,
-        log_var: torch.Tensor
+        log_var: torch.Tensor,
+        seed: Optional[int] = None,
     ) -> torch.Tensor:
         """Reparameterization trick.
         Sample from the gaussian distribution parameterized by `mu` and `log_var`.
@@ -295,8 +299,12 @@ class VAE(nn.Module):
         -------
             sample: Simulated sample from the gaussian distribution that keeps the gradient flowing.
         """
+        generator = None
+        if seed:
+            generator = torch.Generator(device=mu.device)
+            generator.manual_seed(seed)
         std = torch.exp(0.5*log_var)  # Standard deviation
-        eps = torch.randn_like(std)  # Small noise to simulate the sampling
+        eps = torch.randn(std.shape, generator=generator, device=mu.device)  # Small noise to simulate the sampling
         sample = mu + (eps * std)  # Sampling as if coming from the input space
         return sample
 
@@ -333,15 +341,17 @@ class VAE(nn.Module):
         return x, mu, log_var
 
     @torch.no_grad()
-    def generate(self, batch_size: int, image_size: int) -> torch.Tensor:
+    def generate(self, batch_size: int, image_size: int, seed: Optional[int]=None) -> torch.Tensor:
         """Generate a sample of images from the latent space.
 
         Args
         ----
             batch_size: Number of images to create.
             image_size: Width and height of the images.
+            seed: Seed for experience replay.
 
-        Output
+        Returns
+        -------
             sample: Sampled images from the latent space.
                 Shape of [batch_size, n_channels, image_size, image_size].
         """
@@ -351,7 +361,22 @@ class VAE(nn.Module):
         mu = torch.zeros(latent_shape).to(device)
         log_var = torch.zeros(latent_shape).to(device)
 
-        z = self.reparameterize(mu, log_var)
+        z = self.reparameterize(mu, log_var, seed)
         sample = self.decoder(z)
         sample = torch.sigmoid(sample)
         return sample
+
+    @torch.no_grad()
+    def generate_from_z(self, z: torch.Tensor) -> torch.Tensor:
+        x = self.decoder(z)
+        x = torch.sigmoid(x)
+        return x
+
+    @staticmethod
+    def load_from_config(config: dict):
+        return VAE(
+            config['data']['n_channels'],
+            config['net_arch']['n_filters'],
+            config['net_arch']['n_layers'],
+            config['net_arch']['n_channels_latent'],
+        )

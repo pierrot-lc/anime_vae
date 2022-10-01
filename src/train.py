@@ -56,7 +56,7 @@ class TrainVAE:
 
         self.prepared = True  # Preparation is done
 
-    def post_training(self):
+    def save_state(self):
         torch.save(self.model.state_dict(), './models/vae.pth')
         with open('./models/vae.yaml', 'w') as config_file:
             yaml.dump(self.config, config_file)
@@ -144,5 +144,7 @@ class TrainVAE:
                     for m, v in l.items():
                         logs[f'{t} - {m}'] = v
 
-                logs['Generated images'] = wb.Image(self.model.generate(16, self.data['image_size']))
+                logs['Generated images'] = wb.Image(self.model.generate(16, self.data['image_size'], self.train['seed']))
                 wb.log(logs)
+
+                self.save_state()

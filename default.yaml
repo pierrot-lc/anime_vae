@@ -1,8 +1,8 @@
 group: 64x64
 train:
-  n_epochs: 50
+  n_epochs: 100
   batch_size: 128
-  lr: 1.0e-4
+  lr: 1.0e-3
   KLD_weight: 0.1
   seed: 42
 

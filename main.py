@@ -22,7 +22,7 @@ def main(config_path: str):
         return
 
     train.launch_training()
-    train.post_training()
+    train.save_state()
 
 
 if __name__ == '__main__':

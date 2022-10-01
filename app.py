@@ -1,18 +1,27 @@
-import tkinter as tk
-from PIL import Image, ImageTk
-
-import numpy as np
+import yaml
 import torch
+import tkinter as tk
+import numpy as np
+from PIL import Image, ImageTk
+from torch.utils.data import DataLoader
 
-from VAE import load_model
+from src.vae import VAE
+from src.dataset import load_datasets
+from src.pca import PCAComponents
 
 
 class App(tk.Tk):
-    def __init__(self, model, components, size=800, nscales=6):
+    def __init__(
+        self,
+        model: VAE,
+        pca: PCAComponents,
+        size: int = 800,
+        nscales: int = 10,
+    ):
         super().__init__()
 
         self.model = model
-        self.components = components
+        self.pca = pca
 
         self.width = size
         self.height = size // 2
@@ -28,7 +37,7 @@ class App(tk.Tk):
         self.scale_frame.pack(side=tk.LEFT)
 
     def _init_z(self):
-        self.z = torch.randn(self.model.latent_size) * 10
+        self.z = torch.randn(self.nscales)
 
     def _build_scale_frame(self):
         self.scale_frame = tk.Frame(self)
@@ -43,17 +52,17 @@ class App(tk.Tk):
         scales = [
             tk.Scale(
                 frame1,
-                from_=-10,
-                to=10,
+                from_=-2,
+                to=2,
                 resolution=0.1,
                 variable=v,
-                command=lambda val: self.produce_image(),
+                command=lambda _: self.produce_image(),
             )
             for v in self.scales_var
         ]
 
         for i, s in enumerate(scales):
-            s.grid(row=0, column=i%6)
+            s.grid(row=i//6, column=i%6)
 
         # Random button
         frame2 = tk.Frame(self.scale_frame)
@@ -79,18 +88,13 @@ class App(tk.Tk):
 
         self.produce_image()
 
+    @torch.no_grad()
     def produce_image(self):
         for i, v in enumerate(self.scales_var):
             self.z[i] = v.get()
 
-        z_latent = 0
-        for scale, component in zip(self.z, self.components):
-            z_latent += scale * component
-
-        with torch.no_grad():
-            z = z_latent.unsqueeze(0)  # Batch dim
-            image = self.model.decode(z)[0]
-            image = torch.sigmoid(image)
+        z = self.pca.compute_latent(self.z)
+        image = self.model.generate_from_z(z)[0]
 
         image = image.permute(1, 2, 0).numpy()  # To numpy
         image = np.uint8(image * 255)
@@ -113,17 +117,29 @@ class App(tk.Tk):
         self.produce_image()
 
 
-if __name__ == '__main__':
-    config = {
-        'nc': 3,
-        'nfilters': 64,
-        'latent_size': 128,
-        'nlayers': 3,
-        'res_layers': 6,
-    }
-    model = load_model(config, 'hopeful_planet_112.pt')
-    components = np.load('components.npy')
-    components = torch.FloatTensor(components)
+def main(model_path: str, config_path: str):
+    with open(config_path, 'r') as config_file:
+        config = yaml.safe_load(config_file)
 
-    app = App(model, components)
+    model = VAE.load_from_config(config)
+    model.load_state_dict(torch.load(model_path))
+    model.eval()
+
+    train_set, _ = load_datasets(
+        config['data']['path_dir'],
+        config['data']['image_size'],
+        config['train']['seed'],
+    )
+    loader = DataLoader(train_set, batch_size=config['train']['batch_size'], shuffle=True)
+    batch = next(iter(loader))
+
+    pca = PCAComponents()
+    pca.compute_components(model, batch)
+
+    app = App(model, pca)
     app.mainloop()
+
+if __name__ == '__main__':
+    model_path = 'models/vae.pth'
+    config_path = 'models/vae.yaml'
+    main(model_path, config_path)
