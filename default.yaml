@@ -1,16 +1,17 @@
+group: 64x64
 train:
-  n_epochs: 10
-  batch_size: 64
-  lr: 1.0e-4
-  KLD_weight: 0.5
+  n_epochs: 50
+  batch_size: 128
+  lr: 1.0e-3
+  KLD_weight: 0.1
   seed: 42
 
 data:
   path_dir: ./images/
-  image_size: 32
+  image_size: 64
   n_channels: 3
 
 net_arch:
-  n_filters: 8
+  n_filters: 16
   n_layers: 4
-  n_channels_latent: 24
+  n_channels_latent: 64

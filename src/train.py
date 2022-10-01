@@ -1,7 +1,9 @@
 from collections import defaultdict
 
+import yaml
 import numpy as np
 import wandb as wb
+from tqdm import tqdm
 
 import torch
 import torch.optim as optim
@@ -17,6 +19,7 @@ class TrainVAE:
     train: dict
     data: dict
     net_arch: dict
+    group: str
 
     def __init__(self, config: dict):
         self.__dict__ |= config
@@ -52,10 +55,17 @@ class TrainVAE:
 
         self.prepared = True  # Preparation is done
 
+    def post_training(self):
+        torch.save(self.model.state_dict(), './models/vae.pth')
+        with open('./models/vae.yaml') as config_file:
+            yaml.dump(self.__dict__, config_file)
+
+        self.prepared = False
+
     def summary(self):
         n_ticks = 50
         print(f'{"-" * (n_ticks+1)} Summary {"-" * n_ticks}')
-        summary(self.model, input_size=self.input_size)
+        summary(self.model, input_size=self.input_size, depth=4)
 
         print('\nDevice:', self.device)
         print(f'{"-" * (2 * n_ticks + 10)}')
@@ -66,6 +76,7 @@ class TrainVAE:
     ) -> dict:
         log = dict()
         predicted, mu, log_var = self.model(batch)
+        batch = (batch + 1) / 2  # Normalize between [0, 1] to be a binary loss target
 
         log['BCE'] = F.binary_cross_entropy_with_logits(predicted, batch, reduction='mean')
         log['KLD'] = -1/2 * (1 + log_var - mu.pow(2) - log_var.exp()).mean()
@@ -91,8 +102,9 @@ class TrainVAE:
         # Evaluate the model mean metrics
         self.model.eval()
         for batch in loader:
+            batch = batch.to(self.device)
             for metric_name, value in self.batch_forward(batch).items():
-                logs_list[metric_name].append(value)
+                logs_list[metric_name].append(value.cpu().item())
 
         for metric_name, values in logs_list.items():
             logs[metric_name] = np.mean(values)
@@ -100,7 +112,8 @@ class TrainVAE:
         # Logs some predictions
         real = next(iter(loader))[:8].to(self.device)
         predicted, _, _ = self.model(real)
-        predicted = torch.sigmoid(predicted)
+        real = (real + 1) / 2  # Pixels in [0, 1]
+        predicted = torch.sigmoid(predicted)  # Pixels in [0, 1]
         logs['images'] = wb.Image(torch.cat((real, predicted), dim=0))
 
         return logs
@@ -112,19 +125,23 @@ class TrainVAE:
         model = self.model
         model.to(self.device)
 
-        for _ in range(self.train['n_epochs']):
-            logs = dict()
-            self.train_epoch()
+        with wb.init(
+            entity='pierrotlc',
+            group=self.group,
+            project='AnimeVAE',
+            config=self.__dict__,
+            save_code=True,
+        ):
+            for _ in tqdm(range(self.train['n_epochs'])):
+                logs = dict()
+                self.train_epoch()
 
-            train_logs = self.validate(self.train_loader)
-            test_logs = self.validate(self.test_loader)
+                train_logs = self.validate(self.train_loader)
+                test_logs = self.validate(self.test_loader)
 
-            for l, t in [(train_logs, 'Train'), (test_logs, 'Test')]:
-                for m, v in l.items():
-                    logs[f'{t} - {m}'] = v
+                for l, t in [(train_logs, 'Train'), (test_logs, 'Test')]:
+                    for m, v in l.items():
+                        logs[f'{t} - {m}'] = v
 
-            logs['Generated images'] = wb.Image(self.model.generate(16, self.data['image_size']))
-
-            print('\nEpoch:')
-            print(logs['Train - loss'])
-            print(logs['Test - loss'])
+                logs['Generated images'] = wb.Image(self.model.generate(16, self.data['image_size']))
+                wb.log(logs)

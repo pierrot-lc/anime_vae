@@ -5,3 +5,7 @@ if [ ! -d "./images" ]; then
   rm animefacedataset.zip
   echo "Done!"
 fi
+
+if [ ! -d "./models" ]; then
+  mkdir models
+fi
