@@ -23,6 +23,7 @@ class TrainVAE:
 
     def __init__(self, config: dict):
         self.__dict__ |= config
+        self.config = config
         self.prepared = False
 
     def prepare(self):
@@ -57,8 +58,8 @@ class TrainVAE:
 
     def post_training(self):
         torch.save(self.model.state_dict(), './models/vae.pth')
-        with open('./models/vae.yaml') as config_file:
-            yaml.dump(self.__dict__, config_file)
+        with open('./models/vae.yaml', 'w') as config_file:
+            yaml.dump(self.config, config_file)
 
         self.prepared = False
 
@@ -129,7 +130,7 @@ class TrainVAE:
             entity='pierrotlc',
             group=self.group,
             project='AnimeVAE',
-            config=self.__dict__,
+            config=self.config,
             save_code=True,
         ):
             for _ in tqdm(range(self.train['n_epochs'])):

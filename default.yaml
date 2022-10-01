@@ -2,7 +2,7 @@ group: 64x64
 train:
   n_epochs: 50
   batch_size: 128
-  lr: 1.0e-3
+  lr: 1.0e-4
   KLD_weight: 0.1
   seed: 42
 
@@ -12,6 +12,6 @@ data:
   n_channels: 3
 
 net_arch:
-  n_filters: 16
-  n_layers: 4
-  n_channels_latent: 64
+  n_filters: 8
+  n_layers: 5
+  n_channels_latent: 92

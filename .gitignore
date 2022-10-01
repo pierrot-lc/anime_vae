@@ -1,3 +1,4 @@
 images/
+models/
 wandb/
 **/__pycache__/
