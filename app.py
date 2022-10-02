@@ -11,13 +11,16 @@ from src.pca import PCAComponents
 
 
 class App(tk.Tk):
+    """Interact with the latent components of a VAE model
+    and see the resulting decoded image.
+    """
     def __init__(
         self,
         model: VAE,
         pca: PCAComponents,
         device: str = 'cpu',
         size: int = 800,
-        nscales: int = 10,
+        nscales: int = 12,
     ):
         super().__init__()
 
@@ -30,18 +33,21 @@ class App(tk.Tk):
         self.width = size
         self.height = size // 2
         self.nscales = nscales
+        # self.tk.call('tk', 'scaling', 4.0)
 
         self.title('AnimeVAE')
         self.geometry(f'{self.width}x{self.height}')
 
-        self._init_z()
+        self._init_w()
         self._build_scale_frame()
         self._build_image_frame()
         self.image_frame.pack(side=tk.RIGHT)
         self.scale_frame.pack(side=tk.LEFT)
 
-    def _init_z(self):
-        self.z = torch.randn(self.nscales)
+    def _init_w(self):
+        """Instanciate a new weight `w` of shape [nscales,].
+        """
+        self.w = torch.randn(self.nscales)
 
     def _build_scale_frame(self):
         self.scale_frame = tk.Frame(self)
@@ -49,7 +55,7 @@ class App(tk.Tk):
         # Scales
         frame1 = tk.Frame(self.scale_frame)
         self.scales_var = [
-            tk.DoubleVar(value=self.z[i].item())
+            tk.DoubleVar(value=self.w[i].item())
             for i in range(self.nscales)
         ]
 
@@ -94,10 +100,13 @@ class App(tk.Tk):
 
     @torch.no_grad()
     def produce_image(self):
+        """Update each weight of `w` according the the scales and then
+        compute the decoded image of the corresponding latent vector.
+        """
         for i, v in enumerate(self.scales_var):
-            self.z[i] = v.get()
+            self.w[i] = v.get()
 
-        z = self.pca.compute_latent(self.z).to(self.device)
+        z = self.pca.compute_latent(self.w).to(self.device)
         image = self.model.generate_from_z(z)[0]
 
         image = image.permute(1, 2, 0).cpu().numpy()  # To numpy
@@ -115,13 +124,17 @@ class App(tk.Tk):
         )
 
     def random_image(self):
-        self._init_z()
+        """Init a new `w` and update the image.
+        """
+        self._init_w()
         for i, v in enumerate(self.scales_var):
-            v.set(self.z[i].item())
+            v.set(self.w[i].item())
         self.produce_image()
 
 
 def main(model_path: str, config_path: str, device: str):
+    """Load the model, compute the PCA components and launch the app.
+    """
     with open(config_path, 'r') as config_file:
         config = yaml.safe_load(config_file)
 
