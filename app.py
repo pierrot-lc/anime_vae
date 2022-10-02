@@ -1,3 +1,5 @@
+import random
+
 import yaml
 import torch
 import tkinter as tk
@@ -21,6 +23,7 @@ class App(tk.Tk):
         device: str = 'cpu',
         size: int = 800,
         nscales: int = 12,
+        vscales: int = 3,
     ):
         super().__init__()
 
@@ -33,6 +36,7 @@ class App(tk.Tk):
         self.width = size
         self.height = size // 2
         self.nscales = nscales
+        self.vscales = vscales
         # self.tk.call('tk', 'scaling', 4.0)
 
         self.title('AnimeVAE')
@@ -43,6 +47,12 @@ class App(tk.Tk):
         self._build_image_frame()
         self.image_frame.pack(side=tk.RIGHT)
         self.scale_frame.pack(side=tk.LEFT)
+
+        self.move_directions = [
+            1 if random.random() > 0.5 else -1
+            for _ in range(nscales)
+        ]
+        self.is_animating = False
 
     def _init_w(self):
         """Instanciate a new weight `w` of shape [nscales,].
@@ -62,8 +72,8 @@ class App(tk.Tk):
         scales = [
             tk.Scale(
                 frame1,
-                from_=-5,
-                to=5,
+                from_=-self.vscales,
+                to=self.vscales,
                 resolution=0.1,
                 variable=v,
                 command=lambda _: self.produce_image(),
@@ -74,15 +84,23 @@ class App(tk.Tk):
         for i, s in enumerate(scales):
             s.grid(row=i//6, column=i%6)
 
-        # Random button
+        # Buttons
         frame2 = tk.Frame(self.scale_frame)
         tk.Button(
             frame2,
             command=self.random_image,
             text='Randomize',
-            width=30,
+            width=15,
             height=5,
-        ).pack()
+        ).pack(side=tk.LEFT)
+
+        tk.Button(
+            frame2,
+            command=self.toggle_animation,
+            text='Animate',
+            width=15,
+            height=5,
+        ).pack(side=tk.RIGHT, padx=5)
 
         frame1.pack(side=tk.TOP)
         frame2.pack(side=tk.BOTTOM, pady=40)
@@ -130,6 +148,33 @@ class App(tk.Tk):
         for i, v in enumerate(self.scales_var):
             v.set(self.w[i].item())
         self.produce_image()
+
+    def move_around(self):
+        """Move values of `w` randomly, to a local neighbour.
+        """
+        for i, v in enumerate(self.scales_var):
+            w = v.get() + self.move_directions[i] * 0.05
+            w = min(max(w, -self.vscales), self.vscales)
+            v.set(w)
+
+            if abs(w) == self.vscales:  # If we're at a frontier
+                self.move_directions[i] *= -1  # Inverse the direction of future moves
+        self.produce_image()
+
+    def animation(self):
+        """Repeatedly calls the `self.move_around` method.
+        """
+        self.move_around()
+        if self.is_animating:  # Keep going while this variable is true
+            self.after(10, lambda: self.animation())
+
+    def toggle_animation(self):
+        """Toggle on/off the animation and launches it if necessary.
+        """
+        self.is_animating = not self.is_animating
+        if self.is_animating:
+            self.animation()
+
 
 
 def main(model_path: str, config_path: str, device: str):
