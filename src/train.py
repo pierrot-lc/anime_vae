@@ -16,6 +16,10 @@ from src.dataset import load_datasets
 
 
 class TrainVAE:
+    """Training module.
+    Prepare, train and save a VAE model. It uses wandb for monitoring and
+    it saves the config in the internal __dict__ of the module.
+    """
     train: dict
     data: dict
     net_arch: dict
@@ -27,6 +31,8 @@ class TrainVAE:
         self.prepared = False
 
     def prepare(self):
+        """Instanciate the VAE model and optimizer and load the dataset.
+        """
         self.input_size = (
             self.train['batch_size'],
             self.data['n_channels'],
@@ -57,6 +63,8 @@ class TrainVAE:
         self.prepared = True  # Preparation is done
 
     def save_state(self):
+        """Save the model and its config in the default location `./models/`.
+        """
         torch.save(self.model.state_dict(), './models/vae.pth')
         with open('./models/vae.yaml', 'w') as config_file:
             yaml.dump(self.config, config_file)
@@ -64,6 +72,8 @@ class TrainVAE:
         self.prepared = False
 
     def summary(self):
+        """Torchinfo summary and device information.
+        """
         n_ticks = 50
         print(f'{"-" * (n_ticks+1)} Summary {"-" * n_ticks}')
         summary(self.model, input_size=self.input_size, depth=4)
@@ -75,6 +85,20 @@ class TrainVAE:
         self,
         batch: torch.Tensor,
     ) -> dict:
+        """Compute the loss for the given batch.
+
+        Args
+        ----
+            batch: Input batch of images.
+                Shape of [batch_size, n_channels, width, height].
+
+        Returns
+        -------
+            log: Dictionnary of the following metrics:
+                - BCE: Binary crossentropy for image reconstruction.
+                - KLD: KL divergence to constrain the latent distribution to be gaussian.
+                - loss: BCE + KLD_weight * KLD.
+        """
         log = dict()
         predicted, mu, log_var = self.model(batch)
         batch = (batch + 1) / 2  # Normalize between [0, 1] to be a binary loss target
@@ -85,6 +109,8 @@ class TrainVAE:
         return log
 
     def train_epoch(self):
+        """Train the model for one epoch.
+        """
         self.model.train()
         for batch in self.train_loader:
             batch = batch.to(self.device)
@@ -97,6 +123,17 @@ class TrainVAE:
 
     @torch.no_grad()
     def validate(self, loader: DataLoader) -> dict:
+        """Compute metrics of the model on the given dataset.
+
+        Args
+        ----
+            loader: Dataset to be evaluated.
+
+        Returns
+        -------
+            logs: Metrics evaluated. Those are the BCE, the KLD,
+                the loss and some sample of image reconstruction.
+        """
         logs_list = defaultdict(list)
         logs = dict()
 
@@ -120,6 +157,9 @@ class TrainVAE:
         return logs
 
     def launch_training(self):
+        """Train the model.
+        Has to be called once the `prepare` function has been called.
+        """
         if not self.prepared:
             self.prepare()
 

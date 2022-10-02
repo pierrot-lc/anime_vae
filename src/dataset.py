@@ -9,6 +9,8 @@ import torchvision.transforms as transforms
 
 
 class AnimeDataset(Dataset):
+    """Load and transform the images.
+    """
     def __init__(self, paths: list[str], transform: transforms.Compose):
         self.paths = paths
         self.transform = transform
@@ -30,6 +32,18 @@ class AnimeDataset(Dataset):
 
 def load_datasets(path_dir: str, image_size: int, seed: int) -> tuple[AnimeDataset, AnimeDataset]:
     """Instanciate a training and testing dataset by randomly splitting the images.
+    A random horizontal flip is applied to the training images.
+
+    Args
+    ----
+        path_dir: Path to directory containing all images.
+        image_size: All images are resized to [image_size, image_size].
+        seed: For reproducibility.
+
+    Returns
+    -------
+        train: Training dataset.
+        test: Testing dataset.
     """
     paths = [
         os.path.join(path_dir, p)
