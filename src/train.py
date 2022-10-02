@@ -84,7 +84,7 @@ class TrainVAE:
     def batch_forward(
         self,
         batch: torch.Tensor,
-    ) -> dict:
+    ) -> dict[str, torch.Tensor]:
         """Compute the loss for the given batch.
 
         Args

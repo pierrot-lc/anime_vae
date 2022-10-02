@@ -62,8 +62,8 @@ class App(tk.Tk):
         scales = [
             tk.Scale(
                 frame1,
-                from_=-2,
-                to=2,
+                from_=-5,
+                to=5,
                 resolution=0.1,
                 variable=v,
                 command=lambda _: self.produce_image(),
