@@ -65,10 +65,10 @@ it tends to blur the output and to miss some details.
 The final model have been trained on a RTX3080 for 200 epochs for a total of ~3 hours of training.
 
 Here is an example of test images along with their VAE output:
-![Example of a reconstruction](./illustrations/reconstruct_test_images.png)
+![Example of a reconstruction](.illustrations/reconstruct_test_images.png)
 
 Here is an example of generated images from sampling the latent space:
-![Example of a sample generation](./illustrations/generation_sample.png)
+![Example of a sample generation](.illustrations/generation_sample.png)
 
 You can look at the main training run on WandB [here](https://wandb.ai/pierrotlc/animevae/runs/1c8sgcck).
 It is a little bit hard to find the right weighting parameter to balance between the BCE loss and the KL-divergence loss.
@@ -82,6 +82,6 @@ I chose to compute some main PCA components from a random batch of images so tha
 modify the coefficients of the components directly instead of the raw dimensions of the latent space.
 This should lead the higher modifications in the decoded images.
 
-[!Screenshot of the application](./illustrations/app.png)
+![Screenshot of the application](.illustrations/app.png)
 
 The app can also make a small animation, by repeatedly modifying coefficients of the components.
