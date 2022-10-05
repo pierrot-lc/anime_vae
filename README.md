@@ -11,9 +11,9 @@
   and see the result on the decoded images.
 
   The WandB project can be found [here](https://wandb.ai/pierrotlc/animevae).
-  </div>
+</div>
 
-<div style="float:right; width: 40%">
+<div style="float:right;">
   <img src=".illustrations/anim.gif" width=100%>
 </div>
 
