@@ -166,7 +166,7 @@ class App(tk.Tk):
         """
         self.move_around()
         if self.is_animating:  # Keep going while this variable is true
-            self.after(10, lambda: self.animation())
+            self.after(20, lambda: self.animation())
 
     def toggle_animation(self):
         """Toggle on/off the animation and launches it if necessary.
@@ -203,7 +203,7 @@ def main(model_path: str, config_path: str, device: str):
 
 
 if __name__ == '__main__':
-    model_path = 'models/vae.pth'
-    config_path = 'models/vae.yaml'
+    model_path = 'models/glamorous-bee-29/vae.pth'
+    config_path = 'models/glamorous-bee-29/vae.yaml'
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     main(model_path, config_path, device)
