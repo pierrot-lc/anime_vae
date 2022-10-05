@@ -1,3 +1,7 @@
+"""A basic pytorch dataset.
+Each images are normalized to be in the range [-1, 1].
+A random vertical flip is applied to the training images.
+"""
 import os
 
 from PIL import Image

@@ -1,3 +1,6 @@
+"""Contains the training object.
+We use an object so that we do not have to always pass the arguments in the config dict.
+"""
 from collections import defaultdict
 
 import yaml
@@ -90,6 +93,7 @@ class TrainVAE:
         Args
         ----
             batch: Input batch of images.
+                It is assumed that images are in the range [-1, 1].
                 Shape of [batch_size, n_channels, width, height].
 
         Returns

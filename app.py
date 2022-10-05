@@ -37,7 +37,6 @@ class App(tk.Tk):
         self.height = size // 2
         self.nscales = nscales
         self.vscales = vscales
-        # self.tk.call('tk', 'scaling', 4.0)
 
         self.title('AnimeVAE')
         self.geometry(f'{self.width}x{self.height}')

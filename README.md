@@ -1,21 +1,17 @@
 # Anime VAE
-<div style="float:left; width: 60%">
-  Small tkinter app using a VAE to produce anime faces.
+Small tkinter app using a VAE to produce anime faces.
 
-  A Variational Auto-Encoder has been trained on multiple anime faces using this
-  [dataset](https://www.kaggle.com/splcher/animefacedataset).
+A Variational Auto-Encoder has been trained on multiple anime faces using this
+[dataset](https://www.kaggle.com/splcher/animefacedataset).
 
-  From this, the decoder is able to produce images from random points in the latent space.
-  The tkinter application is an friendly interface to generate random images.
-  The application also propose to modify the first principal components in the latent space
-  and see the result on the decoded images.
+From this, the decoder is able to produce images from random points in the latent space.
+The tkinter application is an friendly interface to generate random images.
+The application also propose to modify the first principal components in the latent space
+and see the result on the decoded images.
 
-  The WandB project can be found [here](https://wandb.ai/pierrotlc/animevae).
-</div>
+The WandB project can be found [here](https://wandb.ai/pierrotlc/animevae).
 
-<div style="float:right;">
-  <img src=".illustrations/anim.gif">
-</div>
+![Walking into the latent space](illustrations/anim.gif)
 
 
 ## About the model
@@ -81,6 +77,29 @@ For the final model, I chose to let the KL-divergence on the loose so that the m
 This means that to get a good sampling from the latent space, you might have to draw to a larger space than the usual normal distribution.
 Otherwise, the sampled images could be less diverse than what the model can actually express.
 
+## About the config file
+A YAML configuration file is used to select hyperparameters.
+Here is a list of the parameters used along with their explanations.
+```yaml
+group: 64x64  # WandVB group
+train:
+  n_epochs: 200
+  batch_size: 256
+  lr: 5.0e-4
+  KLD_weight: 0.01  # To balance between BCE loss and KL-divergence
+  seed: 42
+
+data:
+  path_dir: ./images/  # Where to find the training images
+  image_size: 64  # All images are resized to this size
+  n_channels: 3  # Either RGB(3) or GREY(1)
+
+net_arch:
+  n_filters: 20  # Number of initial filters in the VAE encoder
+  n_layers: 5  # Number of layers in the encoder and decoder
+  n_channels_latent: 128  # Latent size of the latent distribution
+```
+
 ## About the application
 The application lets you manually walk into the latent space and visualize the resulting decoded image.
 I chose to compute some main PCA components from a random batch of images so that the application can
@@ -90,3 +109,7 @@ This should lead the higher modifications in the decoded images.
 ![Screenshot of the application](.illustrations/app.png)
 
 The app can also make a small animation, by repeatedly modifying coefficients of the components.
+
+## Sources
+* [Original VAE paper](https://arxiv.org/abs/1312.6114v10)
+* [Inspired from this tutorial](https://debuggercafe.com/getting-started-with-variational-autoencoder-using-pytorch/)

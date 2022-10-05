@@ -1,4 +1,6 @@
-"""
+"""VAE architecture definition.
+This VAE is a fully CNN VAE.
+
 Inspired from https://debuggercafe.com/getting-started-with-variational-autoencoder-using-pytorch/.
 """
 from typing import Optional

@@ -1,3 +1,7 @@
+"""An interface to play with the main components of a PCA decomposition.
+Simply estimates the components with a batch of samples.
+Convert the CNN-like shapes of the latent space with a standard vector shape.
+"""
 from sklearn.decomposition import PCA
 
 import torch
