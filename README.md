@@ -1,12 +1,9 @@
 # Anime VAE
+<div align="left">
 Small tkinter app using a VAE to produce anime faces.
 
 A Variational Auto-Encoder has been trained on multiple anime faces using this
 [dataset](https://www.kaggle.com/splcher/animefacedataset).
-
-<p align="center">
-  <img src=".illustrations/anim.gif" width=50%>
-</p>
 
 From this, the decoder is able to produce images from random points in the latent space.
 The tkinter application is an friendly interface to generate random images.
@@ -14,6 +11,12 @@ The application also propose to modify the first principal components in the lat
 and see the result on the decoded images.
 
 The WandB project can be found [here](https://wandb.ai/pierrotlc/animevae).
+</div>
+
+<p align="right">
+  <img src=".illustrations/anim.gif" width=50%>
+</p>
+
 
 ## About the model
 This is a fully CNN VAE, the latent space is described by a tensor of shape `(latent_size,width,height)`.
