@@ -1,22 +1,20 @@
 # Anime VAE
-<div style="width: 100%;">
-  <div style="float:left; width: 60%">
-    Small tkinter app using a VAE to produce anime faces.
+<div style="float:left; width: 60%">
+  Small tkinter app using a VAE to produce anime faces.
 
-    A Variational Auto-Encoder has been trained on multiple anime faces using this
-    [dataset](https://www.kaggle.com/splcher/animefacedataset).
+  A Variational Auto-Encoder has been trained on multiple anime faces using this
+  [dataset](https://www.kaggle.com/splcher/animefacedataset).
 
-    From this, the decoder is able to produce images from random points in the latent space.
-    The tkinter application is an friendly interface to generate random images.
-    The application also propose to modify the first principal components in the latent space
-    and see the result on the decoded images.
+  From this, the decoder is able to produce images from random points in the latent space.
+  The tkinter application is an friendly interface to generate random images.
+  The application also propose to modify the first principal components in the latent space
+  and see the result on the decoded images.
 
-    The WandB project can be found [here](https://wandb.ai/pierrotlc/animevae).
+  The WandB project can be found [here](https://wandb.ai/pierrotlc/animevae).
   </div>
 
-  <div style="float:right; width: 40%">
-    <img src=".illustrations/anim.gif" width=50%>
-  </div>
+<div style="float:right; width: 40%">
+  <img src=".illustrations/anim.gif" width=100%>
 </div>
 
 
