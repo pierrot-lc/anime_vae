@@ -4,7 +4,8 @@ Small tkinter app using a VAE to produce anime faces.
 A Variational Auto-Encoder has been trained on multiple anime faces using this
 [dataset](https://www.kaggle.com/splcher/animefacedataset).
 
-![Walking in the latent space](.illustrations/anim.gif)
+<img src=".illustrations/anim.gif" 
+     style="display:block;float:none;margin-left:auto;margin-right:auto;width:60%">
 
 From this, the decoder is able to produce images from random points in the latent space.
 The tkinter application is an friendly interface to generate random images.
