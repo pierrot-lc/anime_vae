@@ -1,23 +1,12 @@
-<!-- (This is an HTML comment). Copy and paste this entire HTML `<style>...</style>` element (block)
-to the top of your markdown file -->
-<style>
-img
-{
-    display:block; 
-    float:none; 
-    margin-left:auto;
-    margin-right:auto;
-    width:60%;
-}
-</style>
-
 # Anime VAE
 Small tkinter app using a VAE to produce anime faces.
 
 A Variational Auto-Encoder has been trained on multiple anime faces using this
 [dataset](https://www.kaggle.com/splcher/animefacedataset).
 
-![Walking in the latent space](.illustrations/anim.gif)
+<p align="center">
+  <img src=".illustrations/anim.gif" width=50%>
+</p>
 
 From this, the decoder is able to produce images from random points in the latent space.
 The tkinter application is an friendly interface to generate random images.
