@@ -14,7 +14,7 @@
 </div>
 
 <div style="float:right;">
-  <img src=".illustrations/anim.gif" width=100%>
+  <img src=".illustrations/anim.gif">
 </div>
 
 
