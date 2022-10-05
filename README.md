@@ -11,7 +11,7 @@ and see the result on the decoded images.
 
 The WandB project can be found [here](https://wandb.ai/pierrotlc/animevae).
 
-![Walking into the latent space](illustrations/anim.gif)
+![Walking into the latent space](.illustrations/anim.gif)
 
 
 ## About the model
