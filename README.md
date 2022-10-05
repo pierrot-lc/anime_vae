@@ -4,14 +4,14 @@ Small tkinter app using a VAE to produce anime faces.
 A Variational Auto-Encoder has been trained on multiple anime faces using this
 [dataset](https://www.kaggle.com/splcher/animefacedataset).
 
+![Walking in the latent space](.illustrations/anim.gif)
+
 From this, the decoder is able to produce images from random points in the latent space.
 The tkinter application is an friendly interface to generate random images.
 The application also propose to modify the first principal components in the latent space
 and see the result on the decoded images.
 
-![Walking in the latent space](.illustrations/anim.gif)
-
-The WandB project can be found here: [link](https://wandb.ai/pierrotlc/animevae).
+The WandB project can be found [here](https://wandb.ai/pierrotlc/animevae).
 
 ## About the model
 This is a fully CNN VAE, the latent space is described by a tensor of shape `(latent_size,width,height)`.
@@ -57,6 +57,31 @@ Total params: 17,089,539
 
 This model is stored using LFS.
 
-## TODO
-* Add images to this README
-* Save model to wandb during training
+## About the training
+Training is done using Adam and basic transformations (normalizations and vertical flips).
+The model is trained with the BCE loss on the normalized images.
+Because the model is trained to compress and then reproduce all pixels of the images,
+it tends to blur the output and to miss some details.
+The final model have been trained on a RTX3080 for 200 epochs for a total of ~3 hours of training.
+
+Here is an example of test images along with their VAE output:
+![Example of a reconstruction](./illustrations/reconstruct_test_images.png)
+
+Here is an example of generated images from sampling the latent space:
+![Example of a sample generation](./illustrations/generation_sample.png)
+
+You can look at the main training run on WandB [here](https://wandb.ai/pierrotlc/animevae/runs/1c8sgcck).
+It is a little bit hard to find the right weighting parameter to balance between the BCE loss and the KL-divergence loss.
+For the final model, I chose to let the KL-divergence on the loose so that the model could focus a little more on the details of the images.
+This means that to get a good sampling from the latent space, you might have to draw to a larger space than the usual normal distribution.
+Otherwise, the sampled images could be less diverse than what the model can actually express.
+
+## About the application
+The application lets you manually walk into the latent space and visualize the resulting decoded image.
+I chose to compute some main PCA components from a random batch of images so that the application can
+modify the coefficients of the components directly instead of the raw dimensions of the latent space.
+This should lead the higher modifications in the decoded images.
+
+[!Screenshot of the application](./illustrations/app.png)
+
+The app can also make a small animation, by repeatedly modifying coefficients of the components.
