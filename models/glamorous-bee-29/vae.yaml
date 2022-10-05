@@ -1,0 +1,15 @@
+data:
+  image_size: 64
+  n_channels: 3
+  path_dir: ./images/
+group: 64x64
+net_arch:
+  n_channels_latent: 128
+  n_filters: 20
+  n_layers: 5
+train:
+  KLD_weight: 0.01
+  batch_size: 256
+  lr: 0.0005
+  n_epochs: 200
+  seed: 42
